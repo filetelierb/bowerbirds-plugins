@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bowerbirds": {
+      "type": "http",
+      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
+    }
+  }
+}
