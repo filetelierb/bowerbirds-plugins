@@ -1,6 +1,6 @@
 ---
 name: bowerbirds-records
-description: How to read, file, move, trash and sign records in a Bowerbirds workspace through the bowerbirds MCP server — captures with numbered comments, payload URLs that need no credential, and the signature that marks what this agent already handled. Use whenever a task mentions Bowerbirds, a bucket, a capture, or a screenshot someone filed for you.
+description: How to read, file, move, trash, sign and route records in a Bowerbirds workspace through the bowerbirds MCP server — captures with numbered comments, payload URLs that need no credential, the signature that marks what this agent already handled, and the router tools (list_routes, claim_cycle, derive_record, sign_items with links) an external router uses. Use whenever a task mentions Bowerbirds, a bucket, a capture, a screenshot someone filed for you, or routing a bucket.
 ---
 
 # Bowerbirds records
@@ -28,6 +28,17 @@ Bowerbirds is where people file annotated screenshots (captures), notes, dictati
 - `trash_items` moves records to the Trash; a person can restore them. Nothing here deletes for good.
 - `add_finding` files a short note at the bucket root.
 
+## Routing
+
+A bucket can have one router, and a router of kind `external` names an agent token as its brain: a token minted with the `router` role, which may add and sign and nothing else. Holding that token, you run the bucket's routing cycle yourself, on your own model, with five more tools (`/bowerbirds-route <bucket>` runs the whole loop):
+
+- `list_routes` answers the bucket's router and its routes: each route's `destinations` (workspace `paths` and `buckets` a derivation may land in; `external` targets inside a linked connector), its `connectors` with the tools it `enabled` and `disabled` by name, its `description`, `goal`, `rules`, and `trustedExternalCreate`. It says whether your token is the router's brain and which cycle is running. This is the allowlist the gate holds you to.
+- `claim_cycle` takes the bucket's cycle marker under a lease (default 10 minutes, at most 60) and answers the `cycleId` your marks carry; it is refused with the holder while another run is on the bucket. `renew_cycle` extends it, `release_cycle` lets it go — always release when done.
+- `derive_record` files a NEW record from a source for a route: `sourceId`, `route`, `kind` (`split` or `augment`), `title`, `content`, `path` or `bucket` inside the route's destinations, `copyPayloads` (default true: the source's bytes are copied onto it), `cycle`. It carries `derivedFrom`, the route, its depth and origin chain; landing in the same bucket it is signed `routed` at birth. The gate judges it first (destinations, depth 3, five per source per day). The source is never written.
+- `sign_items` has a second shape for the router: `items: [{id, status, links: [{route, kind, destination, connectorId, target, tool, bucket, path}]}]` with the `cycle`. `kind` is one of `derive | create | append | link | none`; `status` is `kept` (every route said none), `processed` (a route derived), `routed` (dispatched externally, the record stays live) or `pending` (a route still owes a report), and it must agree with the links. Every link is judged by the gate against the route's allowlist, grant and trust; the answer says per record what was signed and what was refused. A record signed with a final status leaves the router's queue until it changes, and carries your plain signature too.
+
+Routers only add: as a router you never move, edit or trash a source — a token with the router role is refused at `move_items` and `trash_items`. External items are created or appended through the tools the route enables on its linked connector, and never through a tool the route lists as disabled. A refusal from the gate is a rule, not a retry: report its sentence.
+
 ## What you cannot do
 
-Read the Trash, read another workspace, mint credentials, or reach a bucket that takes submissions through a publishable web key only. Every refusal names its reason; report it rather than retrying.
+Read the Trash, read another workspace, mint credentials, or reach a bucket that takes submissions through a publishable web key only. With the router role: move or trash anything. Every refusal names its reason; report it rather than retrying.

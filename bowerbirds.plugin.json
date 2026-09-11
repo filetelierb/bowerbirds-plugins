@@ -1,0 +1,35 @@
+{
+  "name": "bowerbirds",
+  "version": "1.1.0",
+  "description": "Bowerbirds for coding agents: the records skill, a route template that turns bug captures into Linear issues, and the Linear remote MCP connector it expects.",
+  "skills": [
+    "claude/skills/bowerbirds-records/SKILL.md"
+  ],
+  "routeTemplates": [
+    {
+      "name": "Bugs to Linear",
+      "kind": "agentic",
+      "description": "Captures and notes that report a bug become Linear issues. Delegate a record here when it describes something broken, wrong or unexpected in a product, with or without a screenshot.",
+      "goal": "One Linear issue per distinct bug, with the capture's comments as the reproduction steps and a comment on the existing issue when the bug is already filed.",
+      "rules": "Search the team's issues before creating one: a record about a bug that already has an issue is an append (a comment with the new detail) or a link, never a second issue. Three records about one bug in a batch are one create and two appends. Do not create an issue from a record that asks a question, proposes a feature or is a note to self — answer none. Never delete, close or edit an existing issue.",
+      "skills": ["bowerbirds-records"],
+      "destinations": ["linear:TEAM"],
+      "connector": {
+        "server": "linear",
+        "expectedTools": ["search_issues", "get_issue", "create_issue", "create_comment"],
+        "grant": {
+          "enabled": ["search_issues", "get_issue", "list_issues", "list_teams", "list_projects", "create_issue", "create_comment"],
+          "disabled": ["delete_issue", "delete_comment", "delete_project", "delete_document"]
+        }
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "name": "linear",
+      "url": "https://mcp.linear.app/mcp",
+      "transport": "http",
+      "auth": "oauth"
+    }
+  ]
+}
