@@ -1,6 +1,6 @@
 ---
 name: bowerbirds-route
-description: Run one routing cycle over a Bowerbirds bucket as its external router through the bowerbirds MCP server — claim_cycle, list_routes, the unsigned records, one dispatch per record per route (derive, create, append, link or none) acted on only through derive_record and the route's enabled connector tools, then sign_items with the links and release_cycle. Use when asked to route, dispatch or triage a Bowerbirds bucket whose router names this agent.
+description: Run one routing cycle over a Bowerbirds bucket as its external router through the bowerbirds MCP server — claim_cycle, list_routes, the unsigned records with their media context (get_record_context; process_media only for a record that has none, it costs credits), one dispatch per record per route (derive, create, append, link or none) acted on only through derive_record and the route's enabled connector tools, then sign_items with the links and release_cycle. Use when asked to route, dispatch or triage a Bowerbirds bucket whose router names this agent.
 ---
 
 # Routing a Bowerbirds bucket
@@ -22,6 +22,8 @@ Call `list_routes`. Each route carries its `destinations` (workspace `paths` and
 ## 3. Fetch what is unsigned
 
 Call `list_items` with the slug and `signed: false`, paging with `cursor` until `nextCursor` is absent. These are the records the router has not signed yet. For each one call `get_capture` to read its content and payload manifest; fetch the annotated image with a plain HTTP GET when the comments point at something you need to see.
+
+When a record carries a `context` stamp — the platform's media processor has read its recording, audio, PDF or pictures — call `get_record_context` with its id and read the `digest` and the `signals` (`bug`, `feature`, `question`, `task`, `decision`, graded `high | medium | low | none`) before deciding; ask for a `part` (`summary`, `segments`, `transcript` or `moments`) when the digest is not enough, instead of fetching the media bytes. A record with no context answers `no_context`: decide it from its content and payloads. `process_media` computes a missing context through the platform's processor, and it **costs the workspace credits** — use it only when the record has no context and its media is what the decision turns on, never with `force` by habit.
 
 ## 4. Decide, per record, per route
 

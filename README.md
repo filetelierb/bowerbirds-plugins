@@ -20,7 +20,7 @@ claude --plugin-dir ./claude
 The plugin adds the `bowerbirds` MCP server, the `bowerbirds-records` skill and two commands:
 
 - `/bowerbirds-triage <bucket>` sweeps a bucket's unsigned records, acts on each in the repository you are in, and signs it.
-- `/bowerbirds-route <bucket>` runs one routing cycle as the bucket's **external router**: it claims the cycle, reads the routes, fetches the unsigned records, decides per record per route (derive, create, append, link or none), looks at the destination with the route's read tools before acting, acts only through `derive_record` and the route's enabled connector tools, signs each record with its status and links, and releases the cycle. It never moves or trashes a record, and a clamp from the gate stops that record and is reported verbatim.
+- `/bowerbirds-route <bucket>` runs one routing cycle as the bucket's **external router**: it claims the cycle, reads the routes, fetches the unsigned records, reads each record's media context (`get_record_context`: the digest and signals first, a part when they are not enough), decides per record per route (derive, create, append, link or none), looks at the destination with the route's read tools before acting, acts only through `derive_record` and the route's enabled connector tools, signs each record with its status and links, and releases the cycle. It never moves or trashes a record, and a clamp from the gate stops that record and is reported verbatim.
 
 ## Codex and ChatGPT
 
@@ -42,3 +42,10 @@ The five routing tools, advertised to a router token beside the others:
 | `claim_cycle` / `renew_cycle` / `release_cycle` | One run at a time on the bucket, under a lease; the cycle id the marks carry. |
 | `derive_record` | A new record from a source (split or augmented), with provenance and the source's bytes copied; judged by the gate; the source is never written. |
 | `sign_items` (`items` shape) | The record's route marks and router mark, with a status (`kept`, `processed`, `routed`, `pending`) and one link per route (`derive`, `create`, `append`, `link`, `none`) naming the destination item. |
+
+Two more read and compute a record's **media context** — what the platform's processor learned from a recording, an audio file, a PDF or a set of pictures:
+
+| Tool | What it does |
+| --- | --- |
+| `get_record_context` | The record's digest, graded signals (bug, feature, question, task, decision), entities, screens, quotes and segments with timed moments, or one `part` (`summary`, `segments`, `transcript`, `moments`). Any role; free. Read it before deciding; ask for a part when the digest is not enough. |
+| `process_media` | Computes a record's context now through the platform's processor. Router role only, and it **costs the workspace credits**: use it only when the record has no context. Your own model is free; the platform's processor is not. |

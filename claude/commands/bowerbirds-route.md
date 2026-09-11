@@ -1,5 +1,5 @@
 ---
-description: Route a Bowerbirds bucket as its external router — claim the cycle, read the routes, dispatch each unsigned record (derive, create, append, link or none), sign it with the links, release the cycle
+description: Route a Bowerbirds bucket as its external router — claim the cycle, read the routes, read each unsigned record's media context, dispatch it (derive, create, append, link or none), sign it with the links, release the cycle
 argument-hint: <bucket-slug>
 ---
 # /bowerbirds-route
@@ -21,6 +21,8 @@ Call `list_routes`. Each route carries its `destinations` (workspace `paths` and
 ## 3. Fetch what is unsigned
 
 Call `list_items` with the slug and `signed: false`, paging with `cursor` until `nextCursor` is absent. These are the records the router has not signed yet. For each one call `get_capture` to read its content and payload manifest; fetch the annotated image with a plain HTTP GET when the comments point at something you need to see.
+
+When a record carries a `context` stamp — the platform's media processor has read its recording, audio, PDF or pictures — call `get_record_context` with its id and read the `digest` and the `signals` (`bug`, `feature`, `question`, `task`, `decision`, graded `high | medium | low | none`) before deciding; ask for a `part` (`summary`, `segments`, `transcript` or `moments`) when the digest is not enough, instead of fetching the media bytes. A record with no context answers `no_context`: decide it from its content and payloads. `process_media` computes a missing context through the platform's processor, and it **costs the workspace credits** — use it only when the record has no context and its media is what the decision turns on, never with `force` by habit.
 
 ## 4. Decide, per record, per route
 

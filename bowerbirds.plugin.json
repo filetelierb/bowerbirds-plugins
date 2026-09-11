@@ -1,6 +1,6 @@
 {
   "name": "bowerbirds",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Bowerbirds for coding agents: the records skill, a route template that turns bug captures into Linear issues, and the Linear remote MCP connector it expects.",
   "skills": [
     "claude/skills/bowerbirds-records/SKILL.md"
