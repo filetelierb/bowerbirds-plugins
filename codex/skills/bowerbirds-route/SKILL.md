@@ -27,9 +27,13 @@ When a record carries a `context` stamp — the platform's media processor has r
 
 A record with no findings answers `no_context`: decide it from its content and payloads — its own words are its findings. `process_media` computes findings through the platform's processor, and it **costs the workspace's credits** — use it only when the record has no findings and its media is what the decision turns on, never with `force` by habit.
 
-## 4. Decide, per record, per route
+## 4. Look before you decide
 
-For every record, ask of every route whether its description and rules fit the record's findings — read the findings themselves, not the record's title or kind. A finding may fit several routes (a meeting that raised a bug and a decision reaches both), a route may receive several findings of one record, and a finding that fits no route stays where it is: report it as unrouted, never force it. Answer per record per route with exactly one dispatch kind:
+Search the destination BEFORE you decide, never after — that is why this step comes first. An internal destination: `search_records` with `q` and the route's destination `path` answers the bucket's matching records (id, title, path, kind, snippet), and `get_record` reads a hit whole, its numbered comments included. An external destination: the route's enabled read tools (`search_issues`, `get_issue`, and the like on the linked connector). Something related already there turns a `create` into a `merge`, an `append` or a `link`. The links other runs recorded are the dedupe memory too: a record that is already linked to an item never earns a second one.
+
+## 5. Decide, per record, per route
+
+With what the destination already holds in hand, ask of every route whether its description and rules fit the record's findings — read the findings themselves, not the record's title or kind. A finding may fit several routes (a meeting that raised a bug and a decision reaches both), a route may receive several findings of one record, and a finding that fits no route stays where it is: report it as unrouted, never force it. Answer per record per route with exactly one dispatch kind:
 
 - `merge` — the destination is internal and a related record already exists: a derived record carrying the findings, placed INTO the Package that holds the related record, or a new Package made of the related records and the derived one.
 - `derive` — a new record in the workspace with nothing related beside it: a split (one of several pieces) or an augmented copy, filed at a path or bucket in the route's destinations.
@@ -39,10 +43,6 @@ For every record, ask of every route whether its description and rules fit the r
 - `none` — the route has nothing to do with this record. Say why in one line; that is a decision.
 
 Each decision carries a reason, a confidence, and the finding ids it rests on. Prefer the smallest kind that does the job: none < link < append < merge < derive < create.
-
-## 5. Look before you act
-
-Search the destination BEFORE you decide, never after. An internal destination: `search_records` with `q` and the route's destination `path` answers the bucket's matching records (id, title, path, kind, snippet), and `get_record` reads a hit whole, its numbered comments included. An external destination: the route's enabled read tools (`search_issues`, `get_issue`, and the like on the linked connector). Something related already there turns a `create` into a `merge`, an `append` or a `link`. The links other runs recorded are the dedupe memory too: a record that is already linked to an item never earns a second one.
 
 ## 6. Act, only through the two doors
 
