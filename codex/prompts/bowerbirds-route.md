@@ -16,19 +16,19 @@ Call `renew_cycle` with the cycle before `expiresAt` when a run is long.
 
 ## 2. Read the routes
 
-Call `list_routes`. Each route carries its `destinations` (organization `paths` and `buckets` a derivation may land in; `external` targets inside a linked connector, with `connectorId` and `target`), its `connectors` with the `tools.enabled` and `tools.disabled` lists, its `description`, `goal`, `rules` and `trustedExternalCreate`. This is the allowlist: a route can only derive into its paths and buckets, and only reach its external targets with the tools it enables. A tool a route lists under `disabled`, or one it never enabled, is not yours to call for that route, even when the connector offers it.
+Call `list_routes`. Each route carries its `destinations` (workspace `paths` and `buckets` a derivation may land in; `external` targets inside a linked connector, with `connectorId` and `target`), its `connectors` with the `tools.enabled` and `tools.disabled` lists, its `description`, `goal`, `rules` and `trustedExternalCreate`. This is the allowlist: a route can only derive into its paths and buckets, and only reach its external targets with the tools it enables. A tool a route lists under `disabled`, or one it never enabled, is not yours to call for that route, even when the connector offers it.
 
 ## 3. Fetch what is unsigned
 
 Call `list_items` with the slug and `signed: false`, paging with `cursor` until `nextCursor` is absent. These are the records the router has not signed yet. For each one call `get_capture` to read its content and payload manifest; fetch the annotated image with a plain HTTP GET when the comments point at something you need to see.
 
-When a record carries a `context` stamp — the platform's media processor has read its recording, audio, PDF or pictures — call `get_record_context` with its id and read the `digest` and the `signals` (`bug`, `feature`, `question`, `task`, `decision`, graded `high | medium | low | none`) before deciding; ask for a `part` (`summary`, `segments`, `transcript` or `moments`) when the digest is not enough, instead of fetching the media bytes. A record with no context answers `no_context`: decide it from its content and payloads. `process_media` computes a missing context through the platform's processor, and it **costs the organization's credits** — use it only when the record has no context and its media is what the decision turns on, never with `force` by habit.
+When a record carries a `context` stamp — the platform's media processor has read its recording, audio, PDF or pictures — call `get_record_context` with its id and read the `digest` and the `signals` (`bug`, `feature`, `question`, `task`, `decision`, graded `high | medium | low | none`) before deciding; ask for a `part` (`summary`, `segments`, `transcript` or `moments`) when the digest is not enough, instead of fetching the media bytes. A record with no context answers `no_context`: decide it from its content and payloads. `process_media` computes a missing context through the platform's processor, and it **costs the workspace's credits** — use it only when the record has no context and its media is what the decision turns on, never with `force` by habit.
 
 ## 4. Decide, per record, per route
 
 For every record, ask of every route whether its description and rules fit the record or a part of it. A record may fit several routes (a capture holding a bug and a feature request reaches both) and a route may receive several records about one thing (three captures about one bug are one issue and two comments). Answer per record per route with exactly one dispatch kind:
 
-- `derive` — a new record in the organization: a split (one of several pieces) or an augmented copy (a generated title, summary or extracted fields), filed at a path or bucket in the route's destinations.
+- `derive` — a new record in the workspace: a split (one of several pieces) or an augmented copy (a generated title, summary or extracted fields), filed at a path or bucket in the route's destinations.
 - `create` — a new item at one of the route's external targets, through an enabled tool.
 - `append` — a comment or attachment on an existing external item, through an enabled tool.
 - `link` — the record refers to an existing external item and nothing needs writing.
