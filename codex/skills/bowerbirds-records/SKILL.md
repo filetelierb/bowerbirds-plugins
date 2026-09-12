@@ -1,6 +1,6 @@
 ---
 name: bowerbirds-records
-description: How to read, file, move, trash, sign and route records in a Bowerbirds organization through the bowerbirds MCP server — captures with numbered comments, payload URLs that need no credential, the signature that marks what this agent already handled, the media context (get_record_context) the platform filed for a recording, audio, PDF or set of pictures, and the router tools (list_routes, claim_cycle, derive_record, sign_items with links, process_media) an external router uses. Use whenever a task mentions Bowerbirds, a bucket, a capture, a screenshot someone filed for you, or routing a bucket.
+description: Read, file, sign and route records in a Bowerbirds organization through the bowerbirds MCP server: captures with numbered comments, credential-free payload URLs, the signature that marks what this agent already handled, the media context filed for a recording, audio, PDF or pictures, and the router tools an external router uses. Use whenever a task mentions Bowerbirds, a bucket, a capture, a screenshot someone filed for you, or routing records.
 ---
 
 # Bowerbirds records
