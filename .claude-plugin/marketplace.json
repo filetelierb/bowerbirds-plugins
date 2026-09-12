@@ -3,14 +3,14 @@
   "owner": { "name": "Bowerbirds" },
   "metadata": {
     "description": "Bowerbirds for coding agents: captures, notes and recordings filed for you, reachable through the remote MCP door.",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "bowerbirds",
       "source": "./claude",
       "description": "Work a Bowerbirds workspace from Claude Code through the remote MCP door, authorized in your browser.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "category": "productivity"
     }
   ]

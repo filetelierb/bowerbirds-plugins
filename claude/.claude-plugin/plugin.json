@@ -1,6 +1,6 @@
 {
   "name": "bowerbirds",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Work a Bowerbirds workspace from Claude Code: fetch annotated captures, notes and recordings, file new ones, move and trash records, sign what you handled, and route a bucket as its external router — through the remote MCP door, authorized in your browser.",
   "author": { "name": "Bowerbirds" },
   "homepage": "https://bowerbirds.app",
