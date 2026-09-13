@@ -20,11 +20,12 @@ Call `renew_cycle` with the cycle before `expiresAt` when a run is long.
 
 ## 2. Read the routes — and the buckets
 
-Call `list_routes`. It answers four things:
+Call `list_routes`. It answers:
 
 - `router` — its `id`, `name`, `kind`, whether `thisTokenIsTheBrain`, and the `activeCycle` if one is running.
 - `buckets` — **every bucket this router supervises**, in scope order: `owner`, `slug`, the `paths` of that bucket it watches (absent means the whole bucket), and `thisToken`, which says whether the token you hold can actually READ that bucket. A workspace token opens all of them; a bucket-scoped token opens exactly one and still sees the rest here by name, so you know which buckets you are NOT reading. **This list is your work list.**
-- `filters` — the router's global filters (`kinds`, `keywords`, `ageDays`): what it gathers at all, in every bucket it supervises. The filters are the ROUTER's; routes carry prose, not filter chips.
+- `filters` — the router's global filters (`kinds`, `keywords`, `ageDays`): what it gathers at all, in every bucket it supervises. The filters are the ROUTER's; routes carry prose, not filter chips. An ABSENT `filters` means the router narrows nothing and gathers every record under every watched path.
+- `note` — present only when this token may read but not route ("this router is …: the fleet runs it, and this token may read but not route", "this token is not the router's brain"). Stop on it, as §1 says.
 - `routes` — each with its `destinations` (workspace `paths` and `buckets` a derivation may land in; `external` targets inside a linked connector, with `connectorId` and `target`), its `connectors` with the `tools.enabled` and `tools.disabled` lists, its `description`, `goal`, `rules` and `trustedExternalCreate`.
 
 The routes are the allowlist: a route can only derive into its paths and buckets, and only reach its external targets with the tools it enables. A tool a route lists under `disabled`, or one it never enabled, is not yours to call for that route, even when the connector offers it. A supervised bucket is not a destination by that fact alone — where a derivation may land is the route's `destinations` and nothing else.
@@ -35,7 +36,14 @@ If some buckets come back without `thisToken`, work only the ones you can read a
 
 Work the buckets one at a time, in the order `list_routes` gave them, and carry each record id **with its bucket slug** — that pair is what `derive_record` and `sign_items` need later.
 
-For each bucket you can read, call `list_items` with THAT bucket's slug and `signed: false`, paging with `cursor` until `nextCursor` is absent. These are the records the router has not signed yet; a record already carrying a `routerStatus` was filed by the router at that version. For each one call `get_capture` to read its content and payload manifest; fetch the annotated image with a plain HTTP GET when the comments point at something you need to see.
+**Ask only for what the router's scope keeps.** The scope you just read is not decoration: for an external router the gather IS this loop, and the platform re-checks nothing you fetch here. So for each bucket you can read, call `list_items` with THAT bucket's slug, `signed: false`, and:
+
+- the bucket's `paths` — one call per watched path, passing it as `path` (the subtree; add `exact: true` only for the folder alone). No `paths` means the whole bucket, one call with no `path`.
+- the router's `filters.kinds` as `kind`, when it names any.
+
+Page with `cursor` until `nextCursor` is absent. Then drop, in memory, anything the rest of the filters exclude: a record older than `filters.ageDays` days, and — when `filters.keywords` names any — a record whose title, content and tags contain none of them (the words are ORed with each other and ANDed with the kind and the age). A record the scope does not keep is not this router's to route, and routing it anyway spends the workspace's credits on work nobody asked for.
+
+Work a record when `signed` is false AND its `routerStatus` is absent or stamped at an older version than the record: `signed` answers for YOUR token alone, so a record a native cycle or an earlier token already filed comes back here and would be routed a second time. For each one call `get_capture` to read its content and payload manifest; fetch the annotated image with a plain HTTP GET when the comments point at something you need to see.
 
 When a record carries a `context` stamp — the platform's media processor has read its recording, audio, PDF or pictures — call `get_record_context` with its id and read the **summary and the findings with their chunk references**: each finding is a detailed description of one thing the media establishes, with the chunk and the moment, pages or scenes it was found at, and verbatim quotes when the exact words matter. Ask for a `part` (`summary`, `findings` or `chunks`) when you want one slice, and call `get_media_chunk` with the chunk id a finding cites (`c1`, `c2`, …) when the description is not enough — it answers what the processor observed in that chunk, and it costs no model call. Never fetch the media bytes to re-read them yourself.
 
@@ -43,7 +51,7 @@ A record with no findings answers `no_context`: decide it from its content and p
 
 ## 4. Look before you decide
 
-Search the destination BEFORE you decide, never after — that is why this step comes first. An internal destination: `search_records` with `q` and the route's destination `path` answers the bucket's matching records (id, title, path, kind, snippet), and `get_record` reads a hit whole, its numbered comments included. `search_records` searches ONE bucket and never more, so on a router of several buckets ask the question once per bucket you can read and name each: "does this already exist?" is not answered by looking in one of three. An external destination: the route's enabled read tools (`search_issues`, `get_issue`, and the like on the linked connector). Something related already there turns a `create` into a `merge`, an `append` or a `link`. The links other runs recorded are the dedupe memory too: a record that is already linked to an item never earns a second one.
+Search the destination BEFORE you decide, never after — that is why this step comes first. An internal destination: `search_records` with `q` and the route's destination `path` answers the bucket's matching records (id, title, path, kind, snippet), and `get_record` reads a hit whole, its numbered comments included. `search_records` searches ONE bucket and never more, so ask the question once per bucket and name each: "does this already exist?" is not answered by looking in one of three. The buckets to ask are the DESTINATION's, not the scope's — every bucket the route's `destinations` name, plus the supervised buckets when the route files back into them. A route may file into a bucket the router does not supervise, and that is the bucket the duplicate would be in. An external destination: the route's enabled read tools (`search_issues`, `get_issue`, and the like on the linked connector). Something related already there turns a `create` into a `merge`, an `append` or a `link`. The links other runs recorded are the dedupe memory too: a record that is already linked to an item never earns a second one.
 
 ## 5. Decide, per record, per route
 

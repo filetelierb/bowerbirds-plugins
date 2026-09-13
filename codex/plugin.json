@@ -2,5 +2,5 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bowerbirds",
   "version": "1.6.0",
-  "description": "Work a Bowerbirds workspace from Codex or ChatGPT: fetch annotated captures, notes and recordings, file new ones, move and trash records, sign what you handled, and route a bucket as its external router — through the remote MCP door, authorized in your browser."
+  "description": "Work a Bowerbirds workspace from Codex or ChatGPT: fetch annotated captures, notes and recordings, file new ones, move and trash records, sign what you handled, and route your buckets as their external router — through the remote MCP door, authorized in your browser."
 }
